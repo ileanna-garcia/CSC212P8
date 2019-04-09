@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,28 @@ public class CheckSpelling {
 		long end = System.nanoTime();
 		double time = (end - start) / 1e9;
 		System.out.println("Loaded " + words.size() + " entries in " + time +" seconds.");
+		return words;
+	}
+	
+	/**
+	 * Load project Gutenberg book to words.
+	 * @param filePath try something like "PrideAndPrejudice.txt"
+	 * @return a list of words in the book, in order.
+	 */
+	public static List<String> loadBook(String filePath) {
+		long start = System.nanoTime();
+		List<String> words = new ArrayList<>();
+		try {
+			// Read from a file:
+			for (String line : Files.readAllLines(new File(filePath).toPath())) {
+				words.addAll(WordSplitter.splitTextToWords(line));
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Couldn't find dictionary.", e);
+		}
+		long end = System.nanoTime();
+		double time = (end - start) / 1e9;
+		System.out.println("Loaded " + words.size() + " from book in " + time +" seconds.");
 		return words;
 	}
 	
@@ -55,7 +78,15 @@ public class CheckSpelling {
 	public static List<String> createMixedDataset(List<String> yesWords, int numSamples, double fractionYes) {
 		// Hint to the ArrayList that it will need to grow to numSamples size:
 		List<String> output = new ArrayList<>(numSamples);
-		// TODO: select numSamples * fractionYes words from yesWords; create the rest as no words.
+		int allYesWords = (int) (numSamples * fractionYes);
+		for (int i= 0; i<allYesWords; i++) {
+			output.add(i,yesWords.get(i));
+		}
+		for (int i = 0; i<allYesWords; i++) {
+			String allWords = yesWords.get(i) + "z";
+			output.add(i,allWords);
+		}
+		
 		return output;
 	}
 	
@@ -63,19 +94,44 @@ public class CheckSpelling {
 	public static void main(String[] args) {
 		// --- Load the dictionary.
 		List<String> listOfWords = loadDictionary();
+		List<String> listOfWordsfromBook = loadBook("src/main/resources/1342-0.txt");
 		
-		// --- Create a bunch of data structures for testing:
+		// --- Create a bunch of data structures for testing and seeing how long it takes to insert:
+		long startTree = System.nanoTime();
 		TreeSet<String> treeOfWords = new TreeSet<>(listOfWords);
+		long endTree = System.nanoTime();
+		double timeTree = (endTree - startTree) / 1e9;
+		System.out.println("Insertion time for TreeSet: " + timeTree);
+
+		long startHash = System.nanoTime();
 		HashSet<String> hashOfWords = new HashSet<>(listOfWords);
+		long endHash = System.nanoTime();
+		double timeHash = (endHash - startHash) / 1e9;
+		System.out.println("Insertion time for HashSet: " + timeHash);
+		
+		long startSSL = System.nanoTime();
 		SortedStringListSet bsl = new SortedStringListSet(listOfWords);
+		long endSSL = System.nanoTime();
+		double timeSSL = (endSSL - startSSL) / 1e9;
+		System.out.println("Insertion time for SSLSet: " + timeSSL);
+		
+		long startChartrie = System.nanoTime();
 		CharTrie trie = new CharTrie();
 		for (String w : listOfWords) {
 			trie.insert(w);
 		}
+		long endChartrie = System.nanoTime();
+		double timeChartrie = (endChartrie - startChartrie) / 1e9;
+		System.out.println("Insertion time for Chartrie: " + timeChartrie);
+		
+		long startLLHash = System.nanoTime();
 		LLHash hm100k = new LLHash(100000);
 		for (String w : listOfWords) {
 			hm100k.add(w);
 		}
+		long endLLHash = System.nanoTime();
+		double timeLLHash = (endLLHash - startLLHash) / 1e9;
+		System.out.println("Insertion time for LLHash: " + timeLLHash);
 		
 		// --- Make sure that every word in the dictionary is in the dictionary:
 		timeLookup(listOfWords, treeOfWords);
@@ -96,7 +152,17 @@ public class CheckSpelling {
 			timeLookup(hitsAndMisses, trie);
 			timeLookup(hitsAndMisses, hm100k);
 		}
-			
+		
+		
+		
+		
+		// --- Time the data structures.
+		timeLookup(listOfWordsfromBook, treeOfWords);
+		timeLookup(listOfWordsfromBook, hashOfWords);
+		timeLookup(listOfWordsfromBook, bsl);
+		timeLookup(listOfWordsfromBook, trie);
+		timeLookup(listOfWordsfromBook, hm100k);
+		System.out.print(listOfWordsfromBook, hm100k));
 
 		
 		// --- linear list timing:
