@@ -64,7 +64,7 @@ public class CheckSpelling {
 		int found = 0;
 		for (String w : words) {
 			if (dictionary.contains(w)) {
-				found++;
+				found++;	
 			}
 		}
 		
@@ -74,6 +74,17 @@ public class CheckSpelling {
 		int nsPerItem = (int) timeSpentPerItem;
 		System.out.println(dictionary.getClass().getSimpleName()+": Lookup of items found="+fractionFound+" time="+nsPerItem+" ns/item");
 	}
+	
+	public static void misspelled(List<String> words, Collection<String> dictionary) {
+		int misspelled = 0;
+		for (String w : words) {
+			if (!dictionary.contains(w)) {
+				misspelled ++;
+			}
+		}
+		System.out.println("Number of misspelled words: " + misspelled);
+	}
+	
 	
 	public static List<String> createMixedDataset(List<String> yesWords, int numSamples, double fractionYes) {
 		// Hint to the ArrayList that it will need to grow to numSamples size:
@@ -90,6 +101,7 @@ public class CheckSpelling {
 		return output;
 	}
 	
+		
 	
 	public static void main(String[] args) {
 		// --- Load the dictionary.
@@ -132,38 +144,60 @@ public class CheckSpelling {
 		long endLLHash = System.nanoTime();
 		double timeLLHash = (endLLHash - startLLHash) / 1e9;
 		System.out.println("Insertion time for LLHash: " + timeLLHash);
+		System.out.println("");
+		System.out.println("");
+		
+//		misspelled(listOfWordsfromBook,listOfWords);
+		
 		
 		// --- Make sure that every word in the dictionary is in the dictionary:
+		System.out.println("Beginning of Dictionary:");
 		timeLookup(listOfWords, treeOfWords);
 		timeLookup(listOfWords, hashOfWords);
 		timeLookup(listOfWords, bsl);
 		timeLookup(listOfWords, trie);
 		timeLookup(listOfWords, hm100k);
-		
+		System.out.println("");
+		System.out.println("");
 		
 		for (int i=0; i<10; i++) {
 			// --- Create a dataset of mixed hits and misses with p=i/10.0
 			List<String> hitsAndMisses = createMixedDataset(listOfWords, 10_000, i/10.0);
-			
+			System.out.println("List of words from dictionary");
 			// --- Time the data structures.
 			timeLookup(hitsAndMisses, treeOfWords);
 			timeLookup(hitsAndMisses, hashOfWords);
 			timeLookup(hitsAndMisses, bsl);
 			timeLookup(hitsAndMisses, trie);
 			timeLookup(hitsAndMisses, hm100k);
+			System.out.println("");
+			System.out.println("");
 		}
 		
+		System.out.println("Beginning of Book:");
+		timeLookup(listOfWords, treeOfWords);
+		timeLookup(listOfWords, hashOfWords);
+		timeLookup(listOfWords, bsl);
+		timeLookup(listOfWords, trie);
+		timeLookup(listOfWords, hm100k);
+		System.out.println("");
+		System.out.println("");
 		
 		
+		for (int i=0; i<10; i++) {
+			// --- Create a dataset of mixed hits and misses with p=i/10.0
+			List<String> hitsAndMisses = createMixedDataset(listOfWordsfromBook, 10_000, i/10.0);
+			System.out.println("List of words from Book");
+			// --- Time the data structures.
+			timeLookup(hitsAndMisses, treeOfWords);
+			timeLookup(hitsAndMisses, hashOfWords);
+			timeLookup(hitsAndMisses, bsl);
+			timeLookup(hitsAndMisses, trie);
+			timeLookup(hitsAndMisses, hm100k);
+			System.out.println("");
+			System.out.println("");
+		}
 		
-		// --- Time the data structures.
-		timeLookup(listOfWordsfromBook, treeOfWords);
-		timeLookup(listOfWordsfromBook, hashOfWords);
-		timeLookup(listOfWordsfromBook, bsl);
-		timeLookup(listOfWordsfromBook, trie);
-		timeLookup(listOfWordsfromBook, hm100k);
-		System.out.print(listOfWordsfromBook, hm100k));
-
 		
 		// --- linear list timing:
 		// Looking up in a list is so slow, we need to sample:

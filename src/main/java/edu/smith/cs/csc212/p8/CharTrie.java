@@ -18,7 +18,6 @@ public class CharTrie extends AbstractSet<String> {
 	 * This gets updated to account for the size.
 	 */
 	int size = 0;
-
 	public void insert(String word) {
 		LinkedList<Character> chars = new LinkedList<>();
 		for (char c : word.toCharArray()) {
@@ -27,7 +26,6 @@ public class CharTrie extends AbstractSet<String> {
 		root.insert(chars);
 		size++;
 	}
-	
 	public boolean contains(Object o) {
 		String word = (String) o;
 		LinkedList<Character> chars = new LinkedList<>();
@@ -36,7 +34,6 @@ public class CharTrie extends AbstractSet<String> {
 		}
 		return root.find(chars);
 	}
-	
 	/**
 	 * Every node in a Trie may have many links (to future letters) AND it may be the "terminal" state of a word.
 	 */
@@ -49,7 +46,6 @@ public class CharTrie extends AbstractSet<String> {
 		 * This is an array of links.
 		 */
 		Node[] links;
-		
 		/**
 		 * Construct a new node (with space for 27 links!).
 		 */
@@ -57,7 +53,6 @@ public class CharTrie extends AbstractSet<String> {
 			this.terminal = false;
 			this.links = new Node[27];
 		}
-		
 		/**
 		 * This maps a character to it's index in our array of links.
 		 * @param c (a letter, a-z or a hyphen.)
@@ -73,7 +68,6 @@ public class CharTrie extends AbstractSet<String> {
 			}
 			return lower - 'a';	
 		}
-		
 		/**
 		 * Insert a word in this trie (or a suffix of a word, because recursion).
 		 * @param chars - a list of characters that used to be a word.
@@ -93,7 +87,6 @@ public class CharTrie extends AbstractSet<String> {
 				links[link].insert(chars);
 			}
 		}
-		
 		/**
 		 * Find a word in this trie (or a suffix of a word, because recursion).
 		 * @param chars - a list of characters that used to be a word.
@@ -112,21 +105,24 @@ public class CharTrie extends AbstractSet<String> {
 				}
 				return links[link].find(chars);
 			}
-		}
-		
+		}	
 		/**
-		 * Incomplete method to compute how many nodes are in this Trie. Recursive.
+		 * Complete method to compute how many nodes are in this Trie. Recursive.
 		 * @return the count of nodes that exist in the Trie, starting from here.
 		 */
 		public int countNodes() {
 			int count = 1;
-			
-
-			
+			if (links.length == 1) {
+			    count ++;
+			}
+			for (int i = 1; i < links.length; i++) {
+				if (links[i] != null) {
+			          count += links[i].countNodes();
+			     }
+			}
 			return count;
 		}
 	}
-	
 	/**
 	 * How do you count the nodes in this Trie?
 	 * Recursion!
@@ -135,7 +131,6 @@ public class CharTrie extends AbstractSet<String> {
 	public int countNodes() {
 		return root.countNodes();
 	}
-
 	/**
 	 * We would need to create an object that kept the recursion state around.
 	 * We will talk about depth-first search (part of the solution to this) next week.
@@ -144,7 +139,6 @@ public class CharTrie extends AbstractSet<String> {
 	public Iterator<String> iterator() {
 		throw new UnsupportedOperationException("Trie Traversal is really hard.");
 	}
-
 	/**
 	 * Just keeping track of the size is cheap. We could also count terminal nodes...
 	 */
